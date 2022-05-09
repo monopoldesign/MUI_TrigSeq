@@ -1,5 +1,5 @@
 /******************************************************************************
-* MUI_TrigSeq - CustomClass for a Trigger-Sequencer
+* MUI_TrigSeq - CustomClass for a Trigger-Sequencer, shows controlling 128 Checkmarks
 * (C)2022 M.Volkel (mario.volkel@outlook.com)
 *******************************************************************************/
 
@@ -51,7 +51,7 @@ void DisposeApp(struct ObjApp * ObjectApp);
 struct ObjApp
 {
 	APTR	App;
-	APTR 	CC_trigSeq0, CC_trigSeq1;
+	APTR 	CC_trigSeq[8];
 	APTR	WI_label_0;
 	APTR	BT_label_0;
 };
@@ -401,30 +401,39 @@ struct ObjApp * CreateApp(void)
 {
 	struct ObjApp * ObjectApp;
 
-	APTR	GROUP_ROOT_0;
+	APTR group0;
+	UBYTE i;	
 
 	if (!(ObjectApp = AllocVec(sizeof(struct ObjApp),MEMF_CLEAR)))
 		return(NULL);
 
-	ObjectApp->CC_trigSeq0 = NewObject(trigSeq->mcc_Class, NULL, TAG_DONE);
-	seqno++;
-	ObjectApp->CC_trigSeq1 = NewObject(trigSeq->mcc_Class, NULL, TAG_DONE);
+	for (i = 0; i < 8; i++)
+	{
+		ObjectApp->CC_trigSeq[i] = NewObject(trigSeq->mcc_Class, NULL, TAG_DONE);
+		seqno++;
+	}
 
 	ObjectApp->BT_label_0 = SimpleButton("Quit");
 
-	GROUP_ROOT_0 = GroupObject,
+	group0 = GroupObject,
 		MUIA_Group_Columns, 1,
 		MUIA_Group_SameSize, TRUE,
 		MUIA_Group_VertSpacing,	0,
-		Child, ObjectApp->CC_trigSeq0,
-		Child, ObjectApp->CC_trigSeq1,
+		Child, ObjectApp->CC_trigSeq[0],
+		Child, ObjectApp->CC_trigSeq[1],
+		Child, ObjectApp->CC_trigSeq[2],
+		Child, ObjectApp->CC_trigSeq[3],
+		Child, ObjectApp->CC_trigSeq[4],
+		Child, ObjectApp->CC_trigSeq[5],
+		Child, ObjectApp->CC_trigSeq[6],
+		Child, ObjectApp->CC_trigSeq[7],
 		Child, ObjectApp->BT_label_0,
 	End;
 
 	ObjectApp->WI_label_0 = WindowObject,
 		MUIA_Window_Title, "MUI_TrigSeq",
 		MUIA_Window_ID, MAKE_ID('0', 'W', 'I', 'N'),
-		WindowContents, GROUP_ROOT_0,
+		WindowContents, group0,
 	End;
 
 	ObjectApp->App = ApplicationObject,
