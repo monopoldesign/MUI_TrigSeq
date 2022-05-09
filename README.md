@@ -1,5 +1,4 @@
-# MUI_CustomClass
+# MUI_TrigSeq
 
-A simple CustomClass under MUI
+A CustomClass for a Trigger-Sequencer under MUI
  
-
