@@ -29,7 +29,7 @@
 /******************************************************************************
 * Macros
 *******************************************************************************/
-#define HOOKPROTONH(name, ret, obj, param) ret name(register __a0 struct IClass *cl, register __a2 obj, register __a1 param)
+#define HOOKPROTONH(name, ret, obj, param) ret name(register __a2 obj, register __a1 param)
 #define MakeHook(hookName, hookFunc) struct Hook hookName = {{NULL, NULL}, (HOOKFUNC)hookFunc, NULL, NULL}
 #define DISPATCHER(name) LONG name(register __a0 Class *cl, register __a2 Object *obj, register __a1 Msg msg)
 
@@ -95,71 +95,24 @@ UWORD seq[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 ------------------------------------------------------------------------------*/
 HOOKPROTONH(ButtonFunc, ULONG, Object *obj, int *msg)
 {
-	#define setBit(bit) \
-		if (val) \
-			seq[no] |= 1<<bit; \
-		else \
-			seq[no] &= ~(1<<bit);
-
 	ULONG id, val, no;
-
+ 
 	id = *msg++;
 	val = *msg++;
 	no = *msg;
 
-	switch (id)
-	{
-		case ID_CB0:
-			setBit(0);
-			break;
-		case ID_CB1:
-			setBit(1);
-			break;
-		case ID_CB2:
-			setBit(2);
-			break;
-		case ID_CB3:
-			setBit(3);
-			break;
-		case ID_CB4:
-			setBit(4);
-			break;
-		case ID_CB5:
-			setBit(5);
-			break;
-		case ID_CB6:
-			setBit(6);
-			break;
-		case ID_CB7:
-			setBit(7);
-			break;
-		case ID_CB8:
-			setBit(8);
-			break;
-		case ID_CB9:
-			setBit(9);
-			break;
-		case ID_CB10:
-			setBit(10);
-			break;
-		case ID_CB11:
-			setBit(11);
-			break;
-		case ID_CB12:
-			setBit(12);
-			break;
-		case ID_CB13:
-			setBit(13);
-			break;
-		case ID_CB14:
-			setBit(14);
-			break;
-		case ID_CB15:
-			setBit(15);
-			break;
-	}
 
-	DoMethod(obj, MUIM_TrigSeq_Refresh);
+	if (id >= ID_CB0 && id <=ID_CB15)
+	{
+		// set/reset bit in current sequence
+		if (val)
+			seq[no] |= 1<<id;
+		else
+			seq[no] &= ~(1<<id);
+
+		// refresh text-field
+		DoMethod(obj, MUIM_TrigSeq_Refresh);
+	}
 
 	return 0;
 }
@@ -272,29 +225,17 @@ ULONG mNew(struct IClass *cl, Object *obj, Msg msg)
 	return((ULONG)obj);
 }
 
+/*-----------------------------------------------------------------------------
+- mRefresh
+------------------------------------------------------------------------------*/
 ULONG mRefresh(struct IClass *cl, Object *obj, Msg msg)
 {
+	// Macros for binary conversion
 	#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
-	#define BYTE_TO_BINARY(byte)  \
-			(byte & 0x0001 ? '1' : '0'), \
-			(byte & 0x0002 ? '1' : '0'), \
-			(byte & 0x0004 ? '1' : '0'), \
-			(byte & 0x0008 ? '1' : '0'), \
-			(byte & 0x0010 ? '1' : '0'), \
-			(byte & 0x0020 ? '1' : '0'), \
-			(byte & 0x0040 ? '1' : '0'), \
-			(byte & 0x0080 ? '1' : '0'), \
-			(byte & 0x0100 ? '1' : '0'), \ 
-			(byte & 0x0200 ? '1' : '0'), \
-			(byte & 0x0400 ? '1' : '0'), \
-			(byte & 0x0800 ? '1' : '0'), \
-			(byte & 0x1000 ? '1' : '0'), \
-			(byte & 0x2000 ? '1' : '0'), \
-			(byte & 0x4000 ? '1' : '0'), \
-			(byte & 0x8000 ? '1' : '0')
+	#define BYTE_TO_BINARY(byte) (byte & 0x0001 ? '1' : '0'), (byte & 0x0002 ? '1' : '0'), (byte & 0x0004 ? '1' : '0'), (byte & 0x0008 ? '1' : '0'), (byte & 0x0010 ? '1' : '0'), (byte & 0x0020 ? '1' : '0'), (byte & 0x0040 ? '1' : '0'), (byte & 0x0080 ? '1' : '0'), (byte & 0x0100 ? '1' : '0'), (byte & 0x0200 ? '1' : '0'), (byte & 0x0400 ? '1' : '0'), (byte & 0x0800 ? '1' : '0'), (byte & 0x1000 ? '1' : '0'), (byte & 0x2000 ? '1' : '0'), (byte & 0x4000 ? '1' : '0'), (byte & 0x8000 ? '1' : '0')
   
   	struct MyData *data = INST_DATA(cl, obj);
-	char buf[8];
+	char buf[16];
 
 	sprintf(buf, BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(seq[data->seqno]));
 	DoMethod(data->txt, MUIM_Set, MUIA_Text_Contents, buf);
